@@ -1,0 +1,42 @@
+name: Maverick Android Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Clonar repositório
+        uses: actions/checkout@v3
+
+      - name: 🧰 Configurar JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 📦 Cache de dependências
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 📀 Permissão ao Gradlew
+        run: chmod +x ./gradlew
+
+      - name: 🏗️ Build APK Debug
+        run: ./gradlew assembleDebug
+
+      - name: 📤 Publicar artefato APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: Maverick-APK-Debug
+          path: app/build/outputs/apk/debug/app-debug.apk
